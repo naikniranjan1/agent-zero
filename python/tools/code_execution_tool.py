@@ -103,19 +103,25 @@ class CodeExecution(Tool):
 
             # initialize local or remote interactive shell interface for session 0 if needed
             if 0 not in shells:
-                if self.agent.config.code_exec_ssh_enabled:
-                    pswd = (
-                        self.agent.config.code_exec_ssh_pass
-                        if self.agent.config.code_exec_ssh_pass
-                        else await rfc_exchange.get_root_password()
-                    )
-                    shell = SSHInteractiveSession(
-                        self.agent.context.log,
-                        self.agent.config.code_exec_ssh_addr,
-                        self.agent.config.code_exec_ssh_port,
-                        self.agent.config.code_exec_ssh_user,
-                        pswd,
-                    )
+                # For local development, prefer local shell over SSH to avoid RFC issues
+                from python.helpers import runtime
+                if self.agent.config.code_exec_ssh_enabled and not runtime.is_development():
+                    try:
+                        pswd = (
+                            self.agent.config.code_exec_ssh_pass
+                            if self.agent.config.code_exec_ssh_pass
+                            else await rfc_exchange.get_root_password()
+                        )
+                        shell = SSHInteractiveSession(
+                            self.agent.context.log,
+                            self.agent.config.code_exec_ssh_addr,
+                            self.agent.config.code_exec_ssh_port,
+                            self.agent.config.code_exec_ssh_user,
+                            pswd,
+                        )
+                    except Exception as e:
+                        # Fall back to local shell if SSH/RFC fails
+                        shell = LocalInteractiveSession()
                 else:
                     shell = LocalInteractiveSession()
 
@@ -151,19 +157,25 @@ class CodeExecution(Tool):
                     await self.reset_terminal()
 
                 if session not in self.state.shells:
-                    if self.agent.config.code_exec_ssh_enabled:
-                        pswd = (
-                            self.agent.config.code_exec_ssh_pass
-                            if self.agent.config.code_exec_ssh_pass
-                            else await rfc_exchange.get_root_password()
-                        )
-                        shell = SSHInteractiveSession(
-                            self.agent.context.log,
-                            self.agent.config.code_exec_ssh_addr,
-                            self.agent.config.code_exec_ssh_port,
-                            self.agent.config.code_exec_ssh_user,
-                            pswd,
-                        )
+                    # For local development, prefer local shell over SSH to avoid RFC issues
+                    from python.helpers import runtime
+                    if self.agent.config.code_exec_ssh_enabled and not runtime.is_development():
+                        try:
+                            pswd = (
+                                self.agent.config.code_exec_ssh_pass
+                                if self.agent.config.code_exec_ssh_pass
+                                else await rfc_exchange.get_root_password()
+                            )
+                            shell = SSHInteractiveSession(
+                                self.agent.context.log,
+                                self.agent.config.code_exec_ssh_addr,
+                                self.agent.config.code_exec_ssh_port,
+                                self.agent.config.code_exec_ssh_user,
+                                pswd,
+                            )
+                        except Exception as e:
+                            # Fall back to local shell if SSH/RFC fails
+                            shell = LocalInteractiveSession()
                     else:
                         shell = LocalInteractiveSession()
                     self.state.shells[session] = shell

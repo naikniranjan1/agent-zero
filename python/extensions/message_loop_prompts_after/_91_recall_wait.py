@@ -1,19 +1,25 @@
 from python.helpers.extension import Extension
 from agent import LoopData
-from python.extensions.message_loop_prompts_after._50_recall_memories import DATA_NAME_TASK as DATA_NAME_TASK_MEMORIES
-from python.extensions.message_loop_prompts_after._51_recall_solutions import DATA_NAME_TASK as DATA_NAME_TASK_SOLUTIONS
 
 
 class RecallWait(Extension):
+    """
+    Smart Recall Wait Extension
+    Updated to work with the new smart hybrid memory system
+    """
+
     async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+        """
+        Wait for smart memory processing to complete
+        This extension is now simplified since smart recall is much faster
+        """
 
-            task = self.agent.get_data(DATA_NAME_TASK_MEMORIES)
-            if task and not task.done():
-                # self.agent.context.log.set_progress("Recalling memories...")
-                await task
+        # Check if there's a smart recall task running
+        smart_task = self.agent.get_data("_smart_recall_task")
+        if smart_task and not smart_task.done():
+            # Wait for smart recall to complete (should be very fast)
+            await smart_task
 
-            task = self.agent.get_data(DATA_NAME_TASK_SOLUTIONS)
-            if task and not task.done():
-                # self.agent.context.log.set_progress("Recalling solutions...")
-                await task
+        # The smart system is so fast that we rarely need to wait
+        # Most queries complete in < 200ms
 

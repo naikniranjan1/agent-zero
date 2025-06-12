@@ -36,6 +36,43 @@ from python.helpers.rate_limiter import RateLimiter
 load_dotenv()
 
 
+# MongoDB Atlas Configuration
+class MongoDBConfig:
+    """MongoDB Atlas configuration"""
+
+    def __init__(self):
+        self.uri = dotenv.get_dotenv_value("MONGODB_URI") or dotenv.get_dotenv_value("MONGODB_ATLAS_URI")
+        self.database = dotenv.get_dotenv_value("MONGODB_DATABASE") or "agent_zero"
+        self.collection_memory = dotenv.get_dotenv_value("MONGODB_COLLECTION_MEMORY") or "user_memory"
+        self.collection_chats = dotenv.get_dotenv_value("MONGODB_COLLECTION_CHATS") or "user_chats"
+        self.collection_knowledge = dotenv.get_dotenv_value("MONGODB_COLLECTION_KNOWLEDGE") or "user_knowledge"
+        self.vector_index_name = dotenv.get_dotenv_value("MONGODB_VECTOR_INDEX") or "vector_search_index"
+
+    @property
+    def is_configured(self) -> bool:
+        """Check if MongoDB is properly configured"""
+        return bool(self.uri)
+
+
+# Vector Store Configuration
+class VectorStoreConfig:
+    """Vector store configuration"""
+
+    def __init__(self):
+        self.provider = dotenv.get_dotenv_value("VECTOR_STORE_PROVIDER") or "faiss"  # "faiss" or "mongodb"
+        self.mongodb = MongoDBConfig()
+
+    @property
+    def use_mongodb(self) -> bool:
+        """Check if MongoDB should be used as vector store"""
+        return self.provider.lower() in ["mongodb", "mongo", "atlas"] and self.mongodb.is_configured
+
+
+# Global configuration instances
+mongodb_config = MongoDBConfig()
+vector_store_config = VectorStoreConfig()
+
+
 class ModelType(Enum):
     CHAT = "Chat"
     EMBEDDING = "Embedding"

@@ -54,6 +54,7 @@ def initialize_agent():
         knowledge_subdirs=["default", current_settings["agent_knowledge_subdir"]],
         mcp_servers=current_settings["mcp_servers"],
         code_exec_docker_enabled=False,
+        code_exec_ssh_enabled=False,  # Disable SSH for local development to avoid RFC issues
         # code_exec_docker_name = "A0-dev",
         # code_exec_docker_image = "frdel/agent-zero-run:development",
         # code_exec_docker_ports = { "22/tcp": 55022, "80/tcp": 55080 }
@@ -61,7 +62,6 @@ def initialize_agent():
         # files.get_base_dir(): {"bind": "/a0", "mode": "rw"},
         # files.get_abs_path("work_dir"): {"bind": "/root", "mode": "rw"},
         # },
-        # code_exec_ssh_enabled = True,
         # code_exec_ssh_addr = "localhost",
         # code_exec_ssh_port = 55022,
         # code_exec_ssh_user = "root",

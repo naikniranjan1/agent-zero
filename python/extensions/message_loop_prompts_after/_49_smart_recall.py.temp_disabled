@@ -1,0 +1,124 @@
+"""
+Super-Fast Smart Memory Recall Extension
+Replaces the old memory recall system with intelligent routing
+"""
+
+import asyncio
+from python.helpers.extension import Extension
+from agent import LoopData
+from python.helpers.print_style import PrintStyle
+
+
+class SmartRecall(Extension):
+    """Smart memory recall with intelligent routing for maximum speed"""
+    
+    def __init__(self, agent):
+        super().__init__(agent)
+        self._router: SmartMemoryRouter = None
+    
+    async def _get_router(self):
+        """Get or create smart memory router"""
+        if self._router is None:
+            try:
+                from python.helpers.smart_memory import SmartMemoryRouter
+                # Get user ID from agent context if available
+                user_id = getattr(self.agent, 'user_id', None) or getattr(self.agent.context, 'user_id', None)
+                self._router = SmartMemoryRouter(self.agent, user_id)
+            except ImportError as e:
+                PrintStyle.error(f"Failed to import SmartMemoryRouter: {e}")
+                return None
+        return self._router
+    
+    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+        """Execute smart memory recall"""
+        
+        # Skip if no user message
+        if not loop_data.user_message:
+            return
+        
+        try:
+            # Get the user's message
+            user_query = loop_data.user_message.output_text() if loop_data.user_message else ""
+            
+            if not user_query.strip():
+                return
+            
+            # Show processing message
+            log_item = self.agent.context.log.log(
+                type="util",
+                heading="🧠 Smart memory processing...",
+            )
+            
+            # Get smart memory router
+            router = await self._get_router()
+
+            if router is None:
+                # Fallback to simple context if smart router fails
+                log_item.update(
+                    heading="⚠ Using fallback context (smart router unavailable)",
+                    context="Recent conversation context"
+                )
+                return
+
+            # Create async task for processing (for compatibility with wait extension)
+            async def process_smart_recall():
+                return await router.process_query(
+                    query=user_query,
+                    chat_history=self._get_recent_history()
+                )
+
+            # Set task data for wait extension compatibility
+            task = asyncio.create_task(process_smart_recall())
+            self.agent.set_data("_smart_recall_task", task)
+
+            # Process query with intelligent routing
+            memories, context = await task
+            
+            # Update log with results
+            if memories:
+                log_item.update(
+                    heading=f"🔍 Found {len(memories)} relevant memories",
+                    memories="\n".join([mem.page_content for mem in memories])
+                )
+            else:
+                log_item.update(
+                    heading="⚡ Using fast context retrieval",
+                    context=context[:500] + "..." if len(context) > 500 else context
+                )
+            
+            # Add context to prompt if we have useful information
+            if context and len(context.strip()) > 50:
+                # Clean up the extras
+                extras = loop_data.extras_persistent
+                if "memories" in extras:
+                    del extras["memories"]
+                if "smart_context" in extras:
+                    del extras["smart_context"]
+                
+                # Add smart context
+                context_prompt = self.agent.read_prompt(
+                    "agent.system.smart_context.md", 
+                    context=context
+                )
+                extras["smart_context"] = context_prompt
+            
+        except Exception as e:
+            PrintStyle.error(f"Smart recall error: {str(e)}")
+            # Fallback to minimal context
+            log_item.update(
+                heading="⚠ Using minimal context (error occurred)",
+                error=str(e)
+            )
+    
+    def _get_recent_history(self) -> list[str]:
+        """Get recent conversation history as text"""
+        try:
+            # Get last few messages from agent history
+            history_text = self.agent.history.output_text()
+            
+            # Split into messages and return last few
+            messages = history_text.split('\n')
+            return [msg.strip() for msg in messages[-10:] if msg.strip()]
+            
+        except Exception:
+            return []

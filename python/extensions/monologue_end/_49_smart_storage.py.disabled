@@ -1,0 +1,177 @@
+"""
+Smart Conversation Storage Extension
+Stores conversations efficiently with intelligent memory promotion
+"""
+
+import asyncio
+from python.helpers.extension import Extension
+from python.helpers.smart_memory import SmartMemoryRouter, MessageClassifier, QueryType
+from python.helpers.memory_unified import UnifiedMemory, MemoryArea
+from agent import LoopData
+from python.helpers.print_style import PrintStyle
+from langchain_core.documents import Document
+
+
+class SmartStorage(Extension):
+    """Smart storage with selective memory promotion"""
+    
+    def __init__(self, agent):
+        super().__init__(agent)
+        self._router: SmartMemoryRouter = None
+    
+    async def _get_router(self) -> SmartMemoryRouter:
+        """Get or create smart memory router"""
+        if self._router is None:
+            user_id = getattr(self.agent, 'user_id', None) or getattr(self.agent.context, 'user_id', None)
+            self._router = SmartMemoryRouter(self.agent, user_id)
+        return self._router
+    
+    async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
+        """Execute smart conversation storage"""
+        
+        try:
+            # Get conversation messages
+            user_message = loop_data.user_message.output_text() if loop_data.user_message else ""
+            
+            # Get agent's response from history
+            agent_response = self._get_latest_agent_response()
+            
+            if not user_message or not agent_response:
+                return
+            
+            # Get smart router
+            router = await self._get_router()
+            
+            # Store conversation in fast chat storage
+            await router.store_conversation(
+                user_message=user_message,
+                agent_response=agent_response,
+                chat_id=self.agent.context.id
+            )
+            
+            # Determine if this conversation should be promoted to long-term memory
+            should_promote = await self._should_promote_to_memory(user_message, agent_response)
+            
+            if should_promote:
+                await self._promote_to_long_term_memory(user_message, agent_response)
+            
+            # Log storage action
+            self.agent.context.log.log(
+                type="info",
+                content=f"💾 Conversation stored {'+ promoted to memory' if should_promote else '(fast storage)'}",
+                temp=True
+            )
+            
+        except Exception as e:
+            PrintStyle.error(f"Smart storage error: {str(e)}")
+    
+    def _get_latest_agent_response(self) -> str:
+        """Get the latest agent response from history"""
+        try:
+            # Get the last assistant message from history
+            history = self.agent.history.output()
+            
+            for message in reversed(history):
+                if hasattr(message, 'role') and message.role == 'assistant':
+                    return message.content
+                elif hasattr(message, 'content') and 'Agent' in str(message.content):
+                    # Extract agent response from content
+                    content = str(message.content)
+                    if ':' in content:
+                        return content.split(':', 1)[1].strip()
+            
+            return ""
+            
+        except Exception:
+            return ""
+    
+    async def _should_promote_to_memory(self, user_message: str, agent_response: str) -> bool:
+        """Determine if conversation should be promoted to long-term memory"""
+        
+        # Classify the user message
+        query_type = MessageClassifier.classify_message(user_message)
+        
+        # Don't promote simple chats
+        if query_type == QueryType.SIMPLE_CHAT:
+            return False
+        
+        # Promote if it contains important information
+        important_keywords = [
+            'remember', 'important', 'save', 'note', 'remind',
+            'project', 'task', 'goal', 'plan', 'solution',
+            'problem', 'issue', 'error', 'fix', 'learn',
+            'password', 'key', 'config', 'setting'
+        ]
+        
+        combined_text = (user_message + " " + agent_response).lower()
+        
+        # Check for important keywords
+        for keyword in important_keywords:
+            if keyword in combined_text:
+                return True
+        
+        # Promote longer, substantive conversations
+        if len(user_message.split()) > 15 or len(agent_response.split()) > 30:
+            return True
+        
+        # Promote if agent used tools (indicates complex interaction)
+        if any(tool_word in agent_response.lower() for tool_word in ['tool_name', 'executed', 'result']):
+            return True
+        
+        return False
+    
+    async def _promote_to_long_term_memory(self, user_message: str, agent_response: str):
+        """Promote conversation to long-term vector memory"""
+        try:
+            # Get vector memory
+            vector_memory = await UnifiedMemory.get(
+                self.agent, 
+                user_id=getattr(self.agent, 'user_id', None)
+            )
+            
+            # Create memory document
+            conversation_summary = f"User: {user_message}\nAssistant: {agent_response}"
+            
+            # Use LLM to extract key information
+            summary = await self._extract_key_information(conversation_summary)
+            
+            if summary and len(summary.strip()) > 20:
+                # Create document for long-term storage
+                doc = Document(
+                    page_content=summary,
+                    metadata={
+                        "area": MemoryArea.FRAGMENTS.value,
+                        "type": "conversation",
+                        "user_message": user_message[:200],  # Truncate for metadata
+                        "agent_response": agent_response[:200],
+                        "chat_id": self.agent.context.id,
+                        "promoted": True
+                    }
+                )
+                
+                # Store in vector memory
+                await vector_memory.insert_documents([doc])
+                
+                PrintStyle.success(f"📚 Promoted conversation to long-term memory")
+            
+        except Exception as e:
+            PrintStyle.error(f"Failed to promote to memory: {str(e)}")
+    
+    async def _extract_key_information(self, conversation: str) -> str:
+        """Extract key information from conversation using LLM"""
+        try:
+            system_prompt = """Extract the key information, facts, decisions, or insights from this conversation. 
+Focus on information that would be useful to remember for future conversations.
+Keep it concise but informative. If the conversation contains no significant information, return empty string."""
+            
+            summary = await self.agent.call_utility_model(
+                system=system_prompt,
+                message=conversation,
+                background=True
+            )
+            
+            return summary.strip() if summary else ""
+            
+        except Exception as e:
+            PrintStyle.error(f"Failed to extract key information: {str(e)}")
+            return ""

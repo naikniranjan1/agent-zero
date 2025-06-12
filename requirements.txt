@@ -2,7 +2,7 @@ a2wsgi==1.10.8
 ansio==0.0.1
 beautifulsoup4==4.12.3
 browser-use==0.1.40
-docker==7.1.0
+# docker==7.1.0  # Optional - only needed for isolated code execution
 duckduckgo-search==6.1.12
 faiss-cpu==1.8.0.post1
 fastmcp==2.3.4
@@ -19,7 +19,12 @@ langchain-huggingface==0.1.2
 langchain-mistralai==0.2.4
 langchain-ollama==0.2.2
 langchain-openai==0.3.1
-openai-whisper==20240930
+# openai-whisper==20240930  # Optional - only needed for speech-to-text
+
+# MongoDB Atlas dependencies
+pymongo==4.6.1
+motor==3.3.2
+langchain-mongodb
 lxml_html_clean==0.3.1
 markdown==3.7
 mcp==1.9.0
@@ -29,7 +34,7 @@ playwright==1.52.0
 pypdf==4.3.1
 python-dotenv==1.1.0
 pytz==2024.2
-sentence-transformers==3.0.1
+# sentence-transformers==3.0.1  # Optional - only needed for local embeddings
 tiktoken==0.8.0
 unstructured==0.15.13
 unstructured-client==0.25.9
