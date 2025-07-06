@@ -28,7 +28,7 @@ https://github.com/user-attachments/assets/c168759d-57d8-4b43-b62a-1026afcf52e6
 - Agent Zero is not pre-programmed for specific tasks (but can be). It is meant to be a general-purpose personal assistant. Give it a task, and it will gather information, execute commands and code, cooperate with other agent instances, and do its best to accomplish it.
 - It has a persistent memory, allowing it to memorize previous solutions, code, facts, instructions, etc., to solve tasks faster and more reliably in the future.
 
-![Agent 0 Working](/docs/res/ui-screen-2.png)
+![Agent Working](/docs/res/ui-screen-2.png)
 
 2. **Computer as a Tool**
 
@@ -42,7 +42,7 @@ https://github.com/user-attachments/assets/c168759d-57d8-4b43-b62a-1026afcf52e6
 3. **Multi-agent Cooperation**
 
 - Every agent has a superior agent giving it tasks and instructions. Every agent then reports back to its superior.
-- In the case of the first agent in the chain (Agent 0), the superior is the human user; the agent sees no difference.
+- In the case of the first agent in the chain (Agent), the superior is the human user; the agent sees no difference.
 - Every agent can create its subordinate agent to help break down and solve subtasks. This helps all agents keep their context clean and focused.
 
 ![Multi-agent](docs/res/physics.png)

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Agent Zero</title>
+    <title>AI Assistant</title>
     <link rel="icon" type="image/svg+xml" href="public/favicon.svg">
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="css/toast.css">
@@ -140,12 +140,6 @@
                     </svg>
                 </span>
             </button>
-
-            <div id="logo-container">
-                <a href="https://github.com/frdel/agent-zero" target="_blank" rel="noopener noreferrer">
-                    <img src="./public/splash.jpg" alt="a0" width="22" height="22">
-                </a>
-            </div>
         </div>
 
         <div id="left-panel" class="panel">
@@ -323,10 +317,6 @@
                         </ul>
                     </span>
                 </div>
-                <!-- Version Info -->
-                <div class="version-info">
-                    <span id="a0version">Version {{version_no}} {{version_time}}</span>
-                </div>
             </div>
         </div>
         <div id="right-panel" class="panel">
@@ -499,7 +489,7 @@
                             </svg>
                         </template>
                         </svg>
-                        <span x-text="paused ? 'Resume Agent' : 'Pause Agent'"></span>
+                        <span x-text="paused ? 'Resume' : 'Pause'"></span>
                     </button>
 
                     <button class="text-button" @click="loadKnowledge()"><svg xmlns="http://www.w3.org/2000/svg"
@@ -580,7 +570,7 @@
                                 <div class="settings-tab"
                                      :class="{'active': activeTab === 'agent'}"
                                      @click="switchTab('agent')"
-                                     title="Agent Settings">Agent Settings</div>
+                                     title="AI Settings">AI Settings</div>
                                 <div class="settings-tab"
                                      :class="{'active': activeTab === 'external'}"
                                      @click="switchTab('external')"
@@ -718,7 +708,7 @@
                             <!-- Tunnel section content - only visible in External Services tab -->
                             <div id="section-tunnel" class="section" x-show="activeTab === 'external'">
                                 <div class="section-title">Flare Tunnel</div>
-                                <div class="section-description">Create a secure public URL to access your Agent Zero instance anytime, anywhere.</div>
+                                <div class="section-description">Create a secure public URL to access your AI assistant instance anytime, anywhere.</div>
                                 <div class="field">
                                     <div class="field-label">
                                         <div class="field-title">Tunnel provider</div>
@@ -755,7 +745,7 @@
                                                 </div>
                                             </div>
                                             <div class="tunnel-link-info">
-                                                Share this URL to allow others to access your Agent Zero instance.
+                                                Share this URL to allow others to access your AI assistant instance.
                                             </div>
                                             <div class="tunnel-link-persistence">
                                                 This URL will persist until you stop the tunnel or restart the Docker container.
@@ -794,7 +784,7 @@
                             <div id="section-task-scheduler" class="section"
                                  x-data="schedulerSettings">
                                 <div class="section-title">Task Scheduler</div>
-                                <div class="section-description">Manage scheduled tasks and automated processes for Agent Zero.</div>
+                                <div class="section-description">Manage scheduled tasks and automated processes for the AI assistant.</div>
 
                                 <!-- Create Task Form -->
                                 <div class="scheduler-form" x-show="isCreating">

@@ -339,11 +339,11 @@ class Agent:
                             font_color="green",
                             padding=True,
                             background_color="white",
-                        ).print(f"{self.agent_name}: Generating")
+                        ).print("Generating")
                         # create log message right away, more responsive
                         self.loop_data.params_temporary["log_item_generating"] = (
                             self.context.log.log(
-                                type="agent", heading=f"{self.agent_name}: Generating"
+                                type="agent", heading="Generating"
                             )
                         )
 

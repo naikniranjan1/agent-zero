@@ -20,7 +20,7 @@ class LogFromStream(Extension):
         if "log_item_generating" not in loop_data.params_temporary:
             loop_data.params_temporary["log_item_generating"] = self.agent.context.log.log(
                 type="agent",
-                heading=f"{self.agent.agent_name}: Generating",
+                heading="Generating",
             )
 
         # update log message

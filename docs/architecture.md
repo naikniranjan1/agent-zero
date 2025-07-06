@@ -6,7 +6,7 @@ This simplified diagram illustrates the hierarchical relationship between agents
 
 ![Agent Zero Architecture](res/arch-01.svg)
 
-The user or Agent 0 is at the top of the hierarchy, delegating tasks to subordinate agents, which can further delegate to other agents. Each agent can utilize tools and access the shared assets (prompts, memory, knowledge, extensions and instruments) to perform its tasks.
+The user or Agent is at the top of the hierarchy, delegating tasks to subordinate agents, which can further delegate to other agents. Each agent can utilize tools and access the shared assets (prompts, memory, knowledge, extensions and instruments) to perform its tasks.
 
 ## Runtime Architecture
 Agent Zero's runtime architecture is built around Docker containers:
@@ -99,13 +99,13 @@ A typical interaction flow within Agent Zero might look like this:
 
 ![Interaction Flow](res/flow-01.svg)
 
-1. The user provides an instruction to Agent 0
-2. Agent 0 initializes VectorDB and access memory
-3. Agent 0 analyzes the instruction and formulates a plan using `thoughts` argument, possibly involving the use of tools or the creation of sub-agents
-4. If necessary, Agent 0 delegates sub-tasks to subordinate agents
+1. The user provides an instruction to Agent 
+2. Agent  initializes VectorDB and access memory
+3. Agent  analyzes the instruction and formulates a plan using `thoughts` argument, possibly involving the use of tools or the creation of sub-agents
+4. If necessary, Agent delegates sub-tasks to subordinate agents
 5. Agents use tools to perform actions, both providing arguments and responses or queries
 6. Agents communicate results and feedback back up the hierarchy
-7. Agent 0 provides the final response to the user
+7. Agent provides the final response to the user
 
 ### 2. Tools
 Tools are functionalities that agents can leverage. These can include anything from web search and code execution to interacting with APIs or controlling external software. Agent Zero provides a mechanism for defining and integrating both built-in and custom tools.
