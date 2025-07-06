@@ -16,7 +16,6 @@ const chatsSection = document.getElementById("chats-section");
 const tasksSection = document.getElementById("tasks-section");
 const progressBar = document.getElementById("progress-bar");
 const autoScrollSwitch = document.getElementById("auto-scroll-switch");
-const timeDate = document.getElementById("time-date-container");
 
 let autoScroll = true;
 let context = "";
@@ -208,31 +207,6 @@ export function updateChatInput(text) {
 
   console.log("Updated chat input value:", chatInput.value);
 }
-
-function updateUserTime() {
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const seconds = now.getSeconds();
-  const ampm = hours >= 12 ? "pm" : "am";
-  const formattedHours = hours % 12 || 12;
-
-  // Format the time
-  const timeString = `${formattedHours}:${minutes
-    .toString()
-    .padStart(2, "0")}:${seconds.toString().padStart(2, "0")} ${ampm}`;
-
-  // Format the date
-  const options = { year: "numeric", month: "short", day: "numeric" };
-  const dateString = now.toLocaleDateString(undefined, options);
-
-  // Update the HTML
-  const userTimeElement = document.getElementById("time-date");
-  userTimeElement.innerHTML = `${timeString}<br><span id="user-date">${dateString}</span>`;
-}
-
-updateUserTime();
-setInterval(updateUserTime, 1000);
 
 function setMessage(id, type, heading, content, temp, kvps = null) {
   // Search for the existing message container by id
